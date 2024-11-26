@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "test-sc"
+name = "test_sc"
 version = "0.1.0"
 description = ""
 authors = ["Florian Rodriguez <florian.rodriguez@sharingcloud.com>"]
@@ -9,6 +9,9 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.9"
 fastapi = {extras = ["standard"], version = "^0.115.5"}
+flake8 = "^7.1.1"
+black = "^24.10.0"
+isort = "^5.13.2"
 
 [build-system]
 requires = ["poetry-core"]
