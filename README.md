@@ -24,12 +24,17 @@ Niveau 3:
 
 ## Dev
 ### Install
+`poetry config virtualenvs.in-project true`\
 `poetry install`\
-`poetry run pre-commit install`
+`poetry run pre-commit install`\
+`poetry run alembic upgrade head`
 
 ### Run
 Run DB with `docker compose up -d`\
-Run FastAPI with `poetry run fastapi dev src/main.py`
+Run FastAPI with `cd src && poetry run fastapi dev main.py`
 
 ### Tools
-Format command manually: `poetry run pre-commit run` or `poetry run pre-commit run --all-files`
+Format command manually: `poetry run pre-commit run` or `poetry run pre-commit run --all-files`\
+Create migration file: `poetry run alembic revision --autogenerate -m "create XXX table"`\
+Apply migrations: `poetry run alembic upgrade head`\
+Show migration status: `poetry run alembic history --verbose`
