@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from sqlmodel import Session, select
 
 from .database import DBSession
-from .modules.users.models import UserInDb
+from .modules.users.models import Role, UserInDb
 
 # Authent method: login + password -> JWT access token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -84,3 +84,16 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: DBSessio
 
 # Helper for getting current authenticated user in endpoints
 AuthenticatedUser = Annotated[UserInDb, Depends(get_current_user)]
+
+
+class AllowRole:
+    """Helper to check if current connected user has the given rights."""
+
+    def __init__(self, allowed_roles: list[Role]):
+        self.allowed_roles = allowed_roles
+
+    def __call__(self, user: Annotated[UserInDb, Depends(get_current_user)]):
+        for role in self.allowed_roles:
+            if user.role.value >= role.value:
+                return True
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)

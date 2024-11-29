@@ -1,11 +1,20 @@
+import enum
+
 from pydantic import EmailStr
-from sqlalchemy import String
+from sqlalchemy import Column, Enum, String
 from sqlmodel import Field, SQLModel
+
+
+class Role(str, enum.Enum):
+    USER = 10
+    ADMIN = 20
 
 
 class UserBase(SQLModel):
     name: str = Field(description="User name", nullable=False)
     email: EmailStr = Field(description="User email", sa_type=String(), nullable=False, unique=True, index=True)
+    role: Role = Field(description="User role", default=Role.USER, sa_column=Column(Enum(Role), nullable=False))
+    # role: Role = Field(description="User role", default=Role.USER, sa_type=Enum(Role), nullable=False)
 
 
 class UserIn(UserBase):

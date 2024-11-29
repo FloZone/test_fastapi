@@ -1,10 +1,10 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 
 from ...database import DBSession
-from ...security import AuthenticatedUser, hash_password
-from .models import UserIn, UserInDb, UserOut
+from ...security import AllowRole, AuthenticatedUser, hash_password
+from .models import Role, UserIn, UserInDb, UserOut
 
 router = APIRouter(
     prefix="/users",
@@ -37,8 +37,10 @@ def list(db: DBSession, current_user: AuthenticatedUser) -> list[UserOut]:
     "/{id}",
     responses={404: {"description": "Not found"}},
 )
-def get(id: int, db: DBSession, current_user: AuthenticatedUser) -> UserOut:
-    """Get user data."""
+def get(
+    id: int, db: DBSession, current_user: AuthenticatedUser, _: bool = Depends(AllowRole([Role.ADMIN]))
+) -> UserOut:
+    """[Admin] Get user data."""
     user = db.get(UserInDb, id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
@@ -50,8 +52,8 @@ def get(id: int, db: DBSession, current_user: AuthenticatedUser) -> UserOut:
     status_code=204,
     responses={404: {"description": "Not found"}},
 )
-def delete(id: int, db: DBSession, current_user: AuthenticatedUser):
-    """Delete an user."""
+def delete(id: int, db: DBSession, current_user: AuthenticatedUser, _: bool = Depends(AllowRole([Role.ADMIN]))):
+    """[Admin] Delete an user."""
     user = db.get(UserInDb, id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
