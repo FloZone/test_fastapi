@@ -1,8 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from sqlmodel import select
 
-from src.database import DBSession
-
+from ...database import DBSession
+from ...security import AuthenticatedUser, hash_password
 from .models import UserIn, UserInDb, UserOut
 
 router = APIRouter(
@@ -15,6 +15,7 @@ router = APIRouter(
 def create(user: UserIn, db: DBSession) -> UserOut:
     """Create an user."""
     user_db = UserInDb.model_validate(user)
+    user_db.password = hash_password(user_db.password)
     db.add(user_db)
     db.commit()
     db.refresh(user_db)
@@ -22,7 +23,7 @@ def create(user: UserIn, db: DBSession) -> UserOut:
 
 
 @router.get("/")
-def list(db: DBSession) -> list[UserOut]:
+def list(db: DBSession, current_user: AuthenticatedUser) -> list[UserOut]:
     """List all users."""
     users = db.exec(select(UserInDb))
     return users
@@ -32,11 +33,11 @@ def list(db: DBSession) -> list[UserOut]:
     "/{id}",
     responses={404: {"description": "Not found"}},
 )
-def get(id: int, db: DBSession) -> UserOut:
+def get(id: int, db: DBSession, current_user: AuthenticatedUser) -> UserOut:
     """Get user data."""
     user = db.get(UserInDb, id)
     if not user:
-        raise HTTPException(status_code=404)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return user
 
 
@@ -45,10 +46,10 @@ def get(id: int, db: DBSession) -> UserOut:
     status_code=204,
     responses={404: {"description": "Not found"}},
 )
-def delete(id: int, db: DBSession):
+def delete(id: int, db: DBSession, current_user: AuthenticatedUser):
     """Delete an user."""
     user = db.get(UserInDb, id)
     if not user:
-        raise HTTPException(status_code=404)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     db.delete(user)
     db.commit()
