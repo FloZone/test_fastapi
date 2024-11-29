@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 
 from ...database import DBSession
@@ -11,13 +12,16 @@ router = APIRouter(
 )
 
 
-@router.post("/")
+@router.post("/", responses={400: {"description": "Bad request"}})
 def create(user: UserIn, db: DBSession) -> UserOut:
     """Create an user."""
     user_db = UserInDb.model_validate(user)
     user_db.password = hash_password(user_db.password)
     db.add(user_db)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
     db.refresh(user_db)
     return user_db
 
