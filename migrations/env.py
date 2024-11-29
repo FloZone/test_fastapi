@@ -5,7 +5,7 @@ from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
 from src.database import DATABASE_URL
-from src.models import User  # noqa: F401
+from src.modules.users.models import UserInDb  # noqa
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
