@@ -14,6 +14,7 @@ app.include_router(users.router)
 
 @app.get("/")
 async def hello_world():
+    """Hello World!"""
     return {"Hello": "World!"}
 
 
@@ -35,4 +36,5 @@ def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: DBSess
 
 @app.get("/me")
 def me(current_user: AuthenticatedUser) -> UserOut:
+    """Get current user data."""
     return current_user
