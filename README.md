@@ -13,7 +13,7 @@ Niveau 1:
 * Un utilisateur peut modifier ses réservations à venir
 
 Niveau 2:
-* Mise en place de l'authentification sur l'API
+* ~~Mise en place de l'authentification sur l'API~~
 * Permettre à un administrateur de gérer les ressources
 * Permettre à un utilisateur de lister les ressources
 * Permettre à un administrateur d'accéder à toutes les réservations
@@ -26,7 +26,6 @@ Niveau 3:
 ### Install
 `poetry config virtualenvs.in-project true`\
 `poetry install`\
-`poetry run pre-commit install`\
 `poetry run alembic upgrade head`
 
 ### Run
@@ -38,3 +37,4 @@ Format command manually: `poetry run pre-commit run` or `poetry run pre-commit r
 Create migration file: `poetry run alembic revision --autogenerate -m "create XXX table"`\
 Apply migrations: `poetry run alembic upgrade head`\
 Show migration status: `poetry run alembic history --verbose`
+Run tests: `pytest tests/* --verbose`
