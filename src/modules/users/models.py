@@ -27,3 +27,9 @@ class UserOut(UserBase):
 class UserInDb(UserOut, table=True):
     __tablename__ = "user"
     password: str = Field(nullable=False)
+
+    def set_password(self, plain_password: str):
+        """Hash and set the given to the user."""
+        from ...security import hash_password
+
+        self.password = hash_password(plain_password)
