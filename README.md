@@ -47,5 +47,5 @@ Run FastAPI with `cd src && poetry run fastapi dev main.py`
 Format command manually: `poetry run pre-commit run` or `poetry run pre-commit run --all-files`\
 Create migration file: `poetry run alembic revision --autogenerate -m "create XXX table"`\
 Apply migrations: `poetry run alembic upgrade head`\
-Show migration status: `poetry run alembic history --verbose`
+Show migration status: `poetry run alembic history --verbose`\
 Run tests: `pytest tests/* --verbose`
