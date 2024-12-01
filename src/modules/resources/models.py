@@ -3,7 +3,7 @@ from enum import auto
 
 from pydantic import NonNegativeInt, field_validator
 from sqlalchemy import CheckConstraint, Column, Enum
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class RoomType(enum.StrEnum):
@@ -36,6 +36,8 @@ class ResourceOut(ResourceBase):
 
 class ResourceInDb(ResourceOut, table=True):
     __tablename__ = "resource"
+
+    bookings: list["BookingInDb"] = Relationship(back_populates="resource", cascade_delete=True)  # noqa
 
     @field_validator("name", "location")
     @classmethod

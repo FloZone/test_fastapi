@@ -2,7 +2,7 @@ import enum
 
 from pydantic import EmailStr
 from sqlalchemy import Column, Enum, String
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class Role(str, enum.Enum):
@@ -27,6 +27,8 @@ class UserOut(UserBase):
 class UserInDb(UserOut, table=True):
     __tablename__ = "user"
     password: str = Field(nullable=False)
+
+    bookings: list["BookingInDb"] = Relationship(back_populates="owner", cascade_delete=True)  # noqa
 
     def set_password(self, plain_password: str):
         """Hash and set the given to the user."""

@@ -18,16 +18,16 @@ Une réservation est composée de:
 ### Règles
 Niveau 1:
 * ~~Créer, modifier et supprimer des ressources~~
-* Tous les utilisateurs peuvent réserver une ressource
-* Un utilisateur peut voir ses réservations passés, en cours et à venir
-* Un utilisateur peut annuler ses réservations en cours ou à venir
+* ~~Tous les utilisateurs peuvent réserver une ressource~~
+* ~~Un utilisateur peut voir ses réservations passés, en cours et à venir~~
+* ~~Un utilisateur peut annuler ses réservations en cours ou à venir~~
 * Un utilisateur peut modifier ses réservations à venir
 
 Niveau 2:
 * ~~Mise en place de l'authentification sur l'API~~
 * ~~Permettre à un administrateur de gérer les ressources~~
 * ~~Permettre à un utilisateur de lister les ressources~~
-* Permettre à un administrateur d'accéder à toutes les réservations
+* ~~Permettre à un administrateur d'accéder à toutes les réservations~~
 * Filtrage sur la liste des ressources (type et localisation)
 
 Niveau 3:
