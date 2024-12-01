@@ -21,7 +21,7 @@ def test_create(client):
 def test_list(session, client_user):
     response = client_user.get("/users/")
     assert response.status_code == 200
-    # Because of authenticated user
+    # Because of fixtures
     user_count = len(response.json())
 
     user_1 = UserInDb(name="user1", email="user1@test.com", password="pwd")
@@ -37,33 +37,23 @@ def test_list(session, client_user):
     assert len(response.json()) == user_count + 2
 
 
-def test_get(session, client_user):
-    user_1 = UserInDb(name="user1", email="user1@test.com", password="pwd")
-    session.add(user_1)
-    session.commit()
-    session.refresh(user_1)
-
+def test_get(session, client_user, base_user):
     response = client_user.get("/users/9999")
     assert response.status_code == 404
 
-    response = client_user.get(f"/users/{user_1.id}")
+    response = client_user.get(f"/users/{base_user.id}")
     data = response.json()
     assert response.status_code == 200
-    assert data["id"] == user_1.id
-    assert data["name"] == user_1.name
-    assert data["email"] == user_1.email
-    assert data["role"] == user_1.role.value
+    assert data["id"] == base_user.id
+    assert data["name"] == base_user.name
+    assert data["email"] == base_user.email
+    assert data["role"] == base_user.role.value
 
 
-def test_delete(session, client_admin):
-    user_1 = UserInDb(name="user1", email="user1@test.com", password="pwd")
-    session.add(user_1)
-    session.commit()
-    session.refresh(user_1)
-
+def test_delete(session, client_admin, base_user):
     response = client_admin.delete("/users/9999")
     assert response.status_code == 404
 
-    response = client_admin.delete(f"/users/{user_1.id}")
+    response = client_admin.delete(f"/users/{base_user.id}")
     assert response.status_code == 204
-    assert not session.get(UserInDb, user_1.id)
+    assert not session.get(UserInDb, base_user.id)

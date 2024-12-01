@@ -27,9 +27,9 @@ def create(user: UserIn, db: DBSession) -> UserOut:
 
 
 @router.get("/")
-def list(db: DBSession, current_user: AuthenticatedUser) -> list[UserOut]:
+def list(db: DBSession, current_user: AuthenticatedUser, offset: int = 0, limit: int = 100) -> list[UserOut]:
     """List all users."""
-    users = db.exec(select(UserInDb))
+    users = db.exec(select(UserInDb).offset(offset).limit(limit)).all()
     return users
 
 

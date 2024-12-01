@@ -4,11 +4,13 @@ from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from .database import DBSession
+from .modules.resources import router as resources
 from .modules.users import router as users
 from .modules.users.models import UserOut
 from .security import AuthenticatedUser, Token, authenticate_user, generate_access_token
 
 app = FastAPI()
+app.include_router(resources.router)
 app.include_router(users.router)
 
 

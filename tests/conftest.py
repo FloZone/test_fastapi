@@ -5,6 +5,7 @@ from sqlmodel.pool import StaticPool
 
 from src.database import get_session
 from src.main import app
+from src.modules.resources.models import ResourceInDb, RoomType
 from src.modules.users.models import Role, UserInDb
 from src.security import get_current_user, hash_password
 
@@ -67,7 +68,7 @@ def client_admin(session, base_admin):
 
 @pytest.fixture()
 def base_user(session) -> UserInDb:
-    user = UserInDb(name="User", email="user@test.com", password=hash_password("password"))
+    user = UserInDb(name="Fixture user", email="fixture_user@test.com", password=hash_password("password"))
     session.add(user)
     session.commit()
     session.refresh(user)
@@ -76,8 +77,21 @@ def base_user(session) -> UserInDb:
 
 @pytest.fixture()
 def base_admin(session) -> UserInDb:
-    user = UserInDb(name="Admin", email="admin@test.com", password=hash_password("password"), role=Role.ADMIN)
+    user = UserInDb(
+        name="Fixture admin", email="fixture_admin@test.com", password=hash_password("password"), role=Role.ADMIN
+    )
     session.add(user)
     session.commit()
     session.refresh(user)
     return user
+
+
+@pytest.fixture()
+def resource(session) -> ResourceInDb:
+    resource = ResourceInDb(
+        name="fixture meeting room", location="france", capacity=10, room_type=RoomType.MEETING_ROOM
+    )
+    session.add(resource)
+    session.commit()
+    session.refresh(resource)
+    return resource

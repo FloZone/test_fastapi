@@ -87,7 +87,7 @@ AuthenticatedUser = Annotated[UserInDb, Depends(get_current_user)]
 
 
 class AllowRole:
-    """Helper to check if current connected user has the given rights."""
+    """Helper to check if currently connected user has the given rights."""
 
     def __init__(self, allowed_roles: list[Role]):
         self.allowed_roles = allowed_roles

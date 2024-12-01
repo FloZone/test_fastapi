@@ -5,6 +5,7 @@ from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
 from src.database import DATABASE_URL
+from src.modules.resources.models import ResourceInDb  # noqa
 from src.modules.users.models import UserInDb  # noqa
 
 # this is the Alembic Config object, which provides
