@@ -38,7 +38,7 @@ def list(db: DBSession, current_user: AuthenticatedUser) -> list[UserOut]:
     responses={404: {"description": "Not found"}},
 )
 def get(id: int, db: DBSession, current_user: AuthenticatedUser) -> UserOut:
-    """[Admin] Get user data."""
+    """Get an user data."""
     user = db.get(UserInDb, id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
