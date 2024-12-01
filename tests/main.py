@@ -14,8 +14,8 @@ def test_login(client, base_user):
     assert token is not None
 
 
-def test_me(client_authenticated, base_user):
-    response = client_authenticated.get("/me")
+def test_me(client_user, base_user):
+    response = client_user.get("/me")
     data = response.json()
 
     assert response.status_code == 200

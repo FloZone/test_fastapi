@@ -37,9 +37,7 @@ def list(db: DBSession, current_user: AuthenticatedUser) -> list[UserOut]:
     "/{id}",
     responses={404: {"description": "Not found"}},
 )
-def get(
-    id: int, db: DBSession, current_user: AuthenticatedUser, _: bool = Depends(AllowRole([Role.ADMIN]))
-) -> UserOut:
+def get(id: int, db: DBSession, current_user: AuthenticatedUser) -> UserOut:
     """[Admin] Get user data."""
     user = db.get(UserInDb, id)
     if not user:

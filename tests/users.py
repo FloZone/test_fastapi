@@ -1,4 +1,4 @@
-from src.modules.users.models import UserInDb
+from src.modules.users.models import Role, UserInDb
 
 
 def test_create(client):
@@ -9,6 +9,7 @@ def test_create(client):
     assert response.status_code == 200
     assert data["name"] == "Toto"
     assert data["email"] == "toto@test.com"
+    assert data["role"] == Role.USER.value
     assert "password" not in data
     assert data["id"] is not None
 
@@ -17,8 +18,8 @@ def test_create(client):
     assert response.status_code == 400
 
 
-def test_list(session, client_authenticated):
-    response = client_authenticated.get("/users/")
+def test_list(session, client_user):
+    response = client_user.get("/users/")
     assert response.status_code == 200
     # Because of authenticated user
     user_count = len(response.json())
@@ -31,37 +32,38 @@ def test_list(session, client_authenticated):
     session.refresh(user_1)
     session.refresh(user_2)
 
-    response = client_authenticated.get("/users/")
+    response = client_user.get("/users/")
     assert response.status_code == 200
     assert len(response.json()) == user_count + 2
 
 
-def test_get(session, client_authenticated):
+def test_get(session, client_user):
     user_1 = UserInDb(name="user1", email="user1@test.com", password="pwd")
     session.add(user_1)
     session.commit()
     session.refresh(user_1)
 
-    response = client_authenticated.get("/users/9999")
+    response = client_user.get("/users/9999")
     assert response.status_code == 404
 
-    response = client_authenticated.get(f"/users/{user_1.id}")
+    response = client_user.get(f"/users/{user_1.id}")
     data = response.json()
     assert response.status_code == 200
     assert data["id"] == user_1.id
     assert data["name"] == user_1.name
     assert data["email"] == user_1.email
+    assert data["role"] == user_1.role.value
 
 
-def test_delete(session, client_authenticated):
+def test_delete(session, client_admin):
     user_1 = UserInDb(name="user1", email="user1@test.com", password="pwd")
     session.add(user_1)
     session.commit()
     session.refresh(user_1)
 
-    response = client_authenticated.delete("/users/9999")
+    response = client_admin.delete("/users/9999")
     assert response.status_code == 404
 
-    response = client_authenticated.delete(f"/users/{user_1.id}")
+    response = client_admin.delete(f"/users/{user_1.id}")
     assert response.status_code == 204
     assert not session.get(UserInDb, user_1.id)
