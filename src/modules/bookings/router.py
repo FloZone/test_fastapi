@@ -1,6 +1,5 @@
 from datetime import datetime
 
-import pytz
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
@@ -17,9 +16,8 @@ router = APIRouter(
     tags=["bookings"],
 )
 
-# TODO create tests
 
-
+# TODO catch datetime_future error and return 400
 @router.post("/", responses={400: {"description": "Value error"}, 404: {"description": "Resource not found"}})
 def create(booking: BookingIn, db: DBSession, current_user: AuthenticatedUser) -> BookingOut:
     """Book a resource."""
@@ -87,7 +85,7 @@ def update(id: int, booking: BookingIn, db: DBSession, current_user: Authenticat
     if current_user.role.value < Role.ADMIN.value and booking_db.owner_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     # Can update future booking but not current or past ones
-    if booking.end > datetime.now(pytz.utc):
+    if booking.end > datetime.now().astimezone():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot update current or past bookings")
 
     update_data = booking.model_dump(exclude_unset=True)
@@ -125,7 +123,7 @@ def delete(
     if current_user.role.value < Role.ADMIN.value and booking.owner_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     # Can delete current or future booking but not past ones
-    if booking.end < datetime.now(pytz.utc):
+    if booking.end < datetime.now().astimezone():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot cancel past bookings")
 
     db.delete(booking)

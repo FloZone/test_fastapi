@@ -1,6 +1,8 @@
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
 from .database import DBSession
@@ -10,10 +12,37 @@ from .modules.users import router as users
 from .modules.users.models import UserOut
 from .security import AuthenticatedUser, Token, authenticate_user, generate_access_token
 
+# Remove auto-generated 422 errors from redoc and swagger docs
+_openapi = FastAPI.openapi
+
+
+def openapi(self: FastAPI):
+    _openapi(self)
+    for _, method_item in self.openapi_schema.get("paths").items():
+        for _, param in method_item.items():
+            responses = param.get("responses")
+            # Remove 422 response
+            if "422" in responses:
+                del responses["422"]
+    return self.openapi_schema
+
+
+FastAPI.openapi = openapi
+
+
 app = FastAPI()
 app.include_router(bookings.router)
 app.include_router(resources.router)
 app.include_router(users.router)
+
+
+# All int validation errors now return 400 error instead of 422
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={"detail": exc.errors()},
+    )
 
 
 @app.get("/")
