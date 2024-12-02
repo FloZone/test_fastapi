@@ -48,4 +48,4 @@ Format command manually: `poetry run pre-commit run` or `poetry run pre-commit r
 Create migration file: `poetry run alembic revision --autogenerate -m "create XXX table"`\
 Apply migrations: `poetry run alembic upgrade head`\
 Show migration status: `poetry run alembic history --verbose`\
-Run tests: `pytest tests/* --verbose`
+Run tests: `pytest tests/* --verbose -s`

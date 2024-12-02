@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
@@ -5,6 +7,7 @@ from sqlmodel.pool import StaticPool
 
 from src.database import get_session
 from src.main import app
+from src.modules.bookings.models import BookingInDb
 from src.modules.resources.models import ResourceInDb, RoomType
 from src.modules.users.models import Role, UserInDb
 from src.security import get_current_user, hash_password
@@ -104,3 +107,31 @@ def resource_2(session) -> ResourceInDb:
     session.commit()
     session.refresh(resource)
     return resource
+
+
+@pytest.fixture()
+def booking_user(session, resource_1, base_user) -> BookingInDb:
+    now = datetime.now().astimezone()
+    start = now + timedelta(hours=1)
+    end = now + timedelta(hours=2)
+    booking = BookingInDb(
+        title="fixture booking user 1", owner_id=base_user.id, resource_id=resource_1.id, start=start, end=end
+    )
+    session.add(booking)
+    session.commit()
+    session.refresh(booking)
+    return booking
+
+
+@pytest.fixture()
+def booking_admin(session, resource_1, base_admin) -> BookingInDb:
+    now = datetime.now().astimezone()
+    start = now + timedelta(hours=4)
+    end = now + timedelta(hours=5)
+    booking = BookingInDb(
+        title="fixture booking admin 1", owner_id=base_admin.id, resource_id=resource_1.id, start=start, end=end
+    )
+    session.add(booking)
+    session.commit()
+    session.refresh(booking)
+    return booking
