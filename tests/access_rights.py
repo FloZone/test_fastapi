@@ -26,6 +26,13 @@ class Access(Enum):
         ("get", "/resources/", Access.USER),
         ("get", "/resources/1", Access.USER),
         ("delete", "/resources/1", Access.ADMIN),
+        # Bookings endpoints
+        ("post", "/bookings/", Access.USER),
+        ("get", "/bookings/", Access.USER),
+        ("get", "/bookings/all", Access.ADMIN),
+        ("get", "/bookings/1", Access.USER),
+        ("put", "/bookings/1", Access.USER),
+        ("delete", "/bookings/1", Access.USER),
     ],
 )
 def test_access_rights(fastapi_client, method, url, access, request):

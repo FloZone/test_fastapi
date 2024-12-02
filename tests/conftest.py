@@ -87,10 +87,19 @@ def base_admin(session) -> UserInDb:
 
 
 @pytest.fixture()
-def resource(session) -> ResourceInDb:
+def resource_1(session) -> ResourceInDb:
     resource = ResourceInDb(
         name="fixture meeting room", location="france", capacity=10, room_type=RoomType.MEETING_ROOM
     )
+    session.add(resource)
+    session.commit()
+    session.refresh(resource)
+    return resource
+
+
+@pytest.fixture()
+def resource_2(session) -> ResourceInDb:
+    resource = ResourceInDb(name="fixture auditorium", location="spain", capacity=250, room_type=RoomType.AUDITORIUM)
     session.add(resource)
     session.commit()
     session.refresh(resource)

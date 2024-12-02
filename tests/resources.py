@@ -37,18 +37,18 @@ def test_list(session, client_user):
     assert len(response.json()) == resource_count + 2
 
 
-def test_get(session, client_user, resource):
+def test_get(session, client_user, resource_1):
     response = client_user.get("/resources/9999")
     assert response.status_code == 404
 
-    response = client_user.get(f"/resources/{resource.id}")
+    response = client_user.get(f"/resources/{resource_1.id}")
     data = response.json()
     assert response.status_code == 200
-    assert data["id"] == resource.id
-    assert data["name"] == resource.name
-    assert data["location"] == resource.location
-    assert data["capacity"] == resource.capacity
-    assert data["room_type"] == resource.room_type.value
+    assert data["id"] == resource_1.id
+    assert data["name"] == resource_1.name
+    assert data["location"] == resource_1.location
+    assert data["capacity"] == resource_1.capacity
+    assert data["room_type"] == resource_1.room_type.value
 
 
 def test_delete(session, client_admin, resource):
