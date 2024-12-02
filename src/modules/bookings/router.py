@@ -4,10 +4,11 @@ import pytz
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
-from sqlmodel import and_, or_, select
+from sqlmodel import select
 
 from ...database import DBSession
 from ...security import AllowRole, AuthenticatedUser
+from ..resources.models import ResourceInDb
 from ..users.models import Role
 from .models import BookingIn, BookingInDb, BookingOut
 
@@ -16,7 +17,6 @@ router = APIRouter(
     tags=["bookings"],
 )
 
-# TODO create update() for future bookings
 # TODO create tests
 
 
@@ -24,32 +24,16 @@ router = APIRouter(
 def create(booking: BookingIn, db: DBSession, current_user: AuthenticatedUser) -> BookingOut:
     """Book a resource."""
     input_data = booking.model_dump()
-
-    resource_id = input_data["resource_id"]
-    start = input_data["start"]
-    end = input_data["end"]
-
-    # TODO put this test on a method + use model_validate before
-    # Search bookings scheduled during the start or the end date
-    statement = (
-        select(BookingInDb)
-        .where(BookingInDb.resource_id == resource_id)
-        .where(
-            or_(
-                and_(BookingInDb.start <= start, start < BookingInDb.end),
-                and_(BookingInDb.start < end, end <= BookingInDb.end),
-            )
-        )
-    )
-    existing_bookings = db.exec(statement).all()
-    if existing_bookings:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Resource is not available on these dates")
-
     input_data["owner_id"] = current_user.id
+    # Validate fields
     try:
         booking_db = BookingInDb.model_validate(input_data)
     except ValidationError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.errors()[0]["msg"])
+    # Check if resource is available
+    if not ResourceInDb.is_available(db, booking_db.resource_id, booking_db.start, booking_db.end):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Resource is not available on these dates")
+    # Save in DB and set FKs
     db.add(booking_db)
     try:
         db.commit()
@@ -91,6 +75,38 @@ def get(id: int, db: DBSession, current_user: AuthenticatedUser) -> BookingOut:
     if current_user.role.value < Role.ADMIN.value and booking.owner_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return booking
+
+
+@router.put("/{id}", responses={404: {"description": "Not found"}})
+def update(id: int, booking: BookingIn, db: DBSession, current_user: AuthenticatedUser) -> BookingOut:
+    """Update a booking data only for future booking."""
+    booking_db = db.get(BookingInDb, id)
+    if not booking_db:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    # If user is not admin and try to access a booking that is not his own
+    if current_user.role.value < Role.ADMIN.value and booking_db.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    # Can update future booking but not current or past ones
+    if booking.end > datetime.now(pytz.utc):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot update current or past bookings")
+
+    update_data = booking.model_dump(exclude_unset=True)
+    update_data["owner_id"] = current_user.id
+    # Validate fields
+    try:
+        BookingInDb.model_validate(update_data)
+    except ValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.errors()[0]["msg"])
+    # Check if resource is available
+    if not ResourceInDb.is_available(db, update_data["resource_id"], update_data["start"], update_data["end"], id):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Resource is not available on these dates")
+
+    # Save in DB
+    booking_db.sqlmodel_update(update_data)
+    db.add(booking_db)
+    db.commit()
+    db.refresh(booking_db)
+    return booking_db
 
 
 @router.delete(

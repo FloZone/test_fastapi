@@ -1,9 +1,10 @@
 import enum
+from datetime import datetime
 from enum import auto
 
 from pydantic import NonNegativeInt, field_validator
 from sqlalchemy import CheckConstraint, Column, Enum
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship, Session, SQLModel, and_, or_, select
 
 
 class RoomType(enum.StrEnum):
@@ -43,3 +44,25 @@ class ResourceInDb(ResourceOut, table=True):
     @classmethod
     def name_validator(cls, value: str) -> str:
         return value.lower()
+
+    @classmethod
+    def is_available(
+        cls, db: Session, resource_id: int, start: datetime, end: datetime, current_booking_id: int = None
+    ) -> bool:
+        """Return whether the resource is available on the given dates excluding the current booking if provided."""
+        from ..bookings.models import BookingInDb
+
+        # Search bookings scheduled during the start or the end date
+        statement = (
+            select(BookingInDb)
+            .where(BookingInDb.id != current_booking_id)
+            .where(BookingInDb.resource_id == resource_id)
+            .where(
+                or_(
+                    and_(BookingInDb.start <= start, start < BookingInDb.end),
+                    and_(BookingInDb.start < end, end <= BookingInDb.end),
+                )
+            )
+        )
+        existing_bookings = db.exec(statement).all()
+        return False if existing_bookings else True

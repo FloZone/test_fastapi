@@ -21,7 +21,7 @@ Niveau 1:
 * ~~Tous les utilisateurs peuvent réserver une ressource~~
 * ~~Un utilisateur peut voir ses réservations passés, en cours et à venir~~
 * ~~Un utilisateur peut annuler ses réservations en cours ou à venir~~
-* Un utilisateur peut modifier ses réservations à venir
+* ~~Un utilisateur peut modifier ses réservations à venir~~
 
 Niveau 2:
 * ~~Mise en place de l'authentification sur l'API~~
