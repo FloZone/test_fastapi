@@ -28,7 +28,7 @@ class UserInDb(UserOut, table=True):
     __tablename__ = "user"
     password: str = Field(nullable=False)
 
-    bookings: list["BookingInDb"] = Relationship(back_populates="owner", cascade_delete=True)  # noqa
+    bookings: list["BookingInDb"] = Relationship(back_populates="owner", cascade_delete=True)  # type: ignore  # noqa
 
     def set_password(self, plain_password: str):
         """Hash and set the given to the user."""

@@ -37,7 +37,7 @@ class ResourceOut(ResourceBase):
 class ResourceInDb(ResourceOut, table=True):
     __tablename__ = "resource"
 
-    bookings: list["BookingInDb"] = Relationship(back_populates="resource", cascade_delete=True)  # noqa
+    bookings: list["BookingInDb"] = Relationship(back_populates="resource", cascade_delete=True)  # type: ignore  # noqa
 
     @field_validator("name", "location")
     @classmethod
