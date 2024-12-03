@@ -29,9 +29,21 @@ def create(
 
 
 @router.get("/")
-def list(db: DBSession, current_user: AuthenticatedUser, offset: int = 0, limit: int = 100) -> list[ResourceOut]:
+def list(
+    db: DBSession,
+    current_user: AuthenticatedUser,
+    offset: int = 0,
+    limit: int = 100,
+    name: str | None = None,
+    location: str | None = None,
+) -> list[ResourceOut]:
     """List all resources."""
-    resources = db.exec(select(ResourceInDb).offset(offset).limit(limit)).all()
+    statement = select(ResourceInDb)
+    if name:
+        statement = statement.where(ResourceInDb.name.icontains(name))
+    if location:
+        statement = statement.where(ResourceInDb.location.icontains(location))
+    resources = db.exec(statement.offset(offset).limit(limit)).all()
     return resources
 
 

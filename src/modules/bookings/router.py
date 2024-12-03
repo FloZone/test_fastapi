@@ -46,19 +46,26 @@ def list_all(
     current_user: AuthenticatedUser,
     offset: int = 0,
     limit: int = 100,
+    title: str | None = None,
     _: bool = Depends(AllowRole([Role.ADMIN])),
 ) -> list[BookingInDb]:
     """[Admin] List all bookings."""
-    bookings = db.exec(select(BookingInDb).offset(offset).limit(limit)).all()
+    statement = select(BookingInDb)
+    if title:
+        statement = statement.where(BookingInDb.title.icontains(title))
+    bookings = db.exec(statement.offset(offset).limit(limit)).all()
     return bookings
 
 
 @router.get("/")
-def list(db: DBSession, current_user: AuthenticatedUser, offset: int = 0, limit: int = 100) -> list[BookingOut]:
+def list(
+    db: DBSession, current_user: AuthenticatedUser, offset: int = 0, limit: int = 100, title: str | None = None
+) -> list[BookingOut]:
     """List user bookings."""
-    bookings = db.exec(
-        select(BookingInDb).where(BookingInDb.owner_id == current_user.id).offset(offset).limit(limit)
-    ).all()
+    statement = select(BookingInDb).where(BookingInDb.owner_id == current_user.id)
+    if title:
+        statement = statement.where(BookingInDb.title.icontains(title))
+    bookings = db.exec(statement.offset(offset).limit(limit)).all()
     return bookings
 
 

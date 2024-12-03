@@ -28,7 +28,7 @@ Niveau 2:
 * ~~Permettre à un administrateur de gérer les ressources~~
 * ~~Permettre à un utilisateur de lister les ressources~~
 * ~~Permettre à un administrateur d'accéder à toutes les réservations~~
-* Filtrage sur la liste des ressources (type et localisation)
+* ~~Filtrage sur la liste des ressources (type et localisation)~~
 
 Niveau 3:
 - Mise en place d'OAuth

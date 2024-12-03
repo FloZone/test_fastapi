@@ -67,20 +67,31 @@ def test_list(session, client_user, base_user, base_admin, resource_1):
     t2 = now - timedelta(days=10, hours=2)
     t3 = now + timedelta(days=10, hours=2)
     t4 = now + timedelta(days=10, hours=3)
-    booking_1 = BookingInDb(title="booking 1", owner_id=base_user.id, resource_id=resource_1.id, start=t1, end=t2)
-    booking_2 = BookingInDb(title="booking 2", owner_id=base_user.id, resource_id=resource_1.id, start=t2, end=t3)
-    booking_3 = BookingInDb(title="booking 3", owner_id=base_admin.id, resource_id=resource_1.id, start=t3, end=t4)
+    booking_1 = BookingInDb(title="chiken burger", owner_id=base_user.id, resource_id=resource_1.id, start=t1, end=t2)
+    booking_2 = BookingInDb(title="cheddar burger", owner_id=base_user.id, resource_id=resource_1.id, start=t2, end=t3)
+    booking_3 = BookingInDb(title="munster burger", owner_id=base_user.id, resource_id=resource_1.id, start=t3, end=t4)
+    booking_4 = BookingInDb(title="veggy burder", owner_id=base_admin.id, resource_id=resource_1.id, start=t3, end=t4)
     session.add(booking_1)
     session.add(booking_2)
     session.add(booking_3)
+    session.add(booking_4)
     session.commit()
     session.refresh(booking_1)
     session.refresh(booking_2)
     session.refresh(booking_3)
+    session.refresh(booking_4)
 
     response = client_user.get("/bookings/")
     assert response.status_code == 200
-    assert len(response.json()) == booking_count + 2
+    assert len(response.json()) == booking_count + 3
+
+    response = client_user.get("/bookings/", params={"title": "burger"})
+    assert response.status_code == 200
+    assert len(response.json()) == 3
+
+    response = client_user.get("/bookings/", params={"title": "munster"})
+    assert response.status_code == 200
+    assert len(response.json()) == 1
 
 
 def test_list_all(session, client_admin, base_user, base_admin, resource_1):
