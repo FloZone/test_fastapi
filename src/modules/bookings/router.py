@@ -53,7 +53,6 @@ def list_all(
     return bookings
 
 
-# TODO seems to have a bug on listing past bookings, same on list_all
 @router.get("/")
 def list(db: DBSession, current_user: AuthenticatedUser, offset: int = 0, limit: int = 100) -> list[BookingOut]:
     """List user bookings."""

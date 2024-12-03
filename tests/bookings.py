@@ -63,8 +63,8 @@ def test_list(session, client_user, base_user, base_admin, resource_1):
     booking_count = len(response.json())
 
     now = datetime.now().astimezone()
-    t1 = now + timedelta(days=10, hours=0)
-    t2 = now + timedelta(days=10, hours=1)
+    t1 = now - timedelta(days=10, hours=3)
+    t2 = now - timedelta(days=10, hours=2)
     t3 = now + timedelta(days=10, hours=2)
     t4 = now + timedelta(days=10, hours=3)
     booking_1 = BookingInDb(title="booking 1", owner_id=base_user.id, resource_id=resource_1.id, start=t1, end=t2)

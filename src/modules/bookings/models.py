@@ -1,4 +1,6 @@
-from pydantic import FutureDatetime, ValidationInfo, field_validator
+from datetime import datetime
+
+from pydantic import ValidationInfo, field_validator
 from sqlalchemy import Column, DateTime
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -8,10 +10,10 @@ from ...modules.users.models import UserInDb
 
 class BookingBase(SQLModel):
     title: str = Field(description="Booking subject", nullable=False)
-    start: FutureDatetime = Field(
+    start: datetime = Field(
         description="Booking start date & time", sa_column=Column(DateTime(timezone=True), nullable=False)
     )
-    end: FutureDatetime = Field(
+    end: datetime = Field(
         description="Booking end date & time", sa_column=Column(DateTime(timezone=True), nullable=False)
     )
 
@@ -35,10 +37,23 @@ class BookingInDb(BookingBase, table=True):
     resource_id: int = Field(nullable=False, foreign_key="resource.id")
     resource: ResourceInDb = Relationship(back_populates="bookings")
 
+    @field_validator("start")
+    @classmethod
+    def start_date_validator(cls, value: DateTime, info: ValidationInfo) -> DateTime:
+        """Check that start datetime is in future."""
+        now = datetime.now().astimezone()
+        if value < now:
+            raise ValueError(f"'{info.field_name}' must be in future")
+        return value
+
     @field_validator("end")
     @classmethod
-    def end_date_validator(cls, value: FutureDatetime, info: ValidationInfo) -> FutureDatetime:
-        """Check that end datetime is after start datetime."""
+    def end_date_validator(cls, value: DateTime, info: ValidationInfo) -> DateTime:
+        """Check that end datetime is in future and after start datetime."""
+        now = datetime.now().astimezone()
+        if value < now:
+            raise ValueError(f"'{info.field_name}' must be in future")
+
         if value <= info.data["start"]:
             raise ValueError(f"'{info.field_name}' must be after the booking start date time")
         return value
