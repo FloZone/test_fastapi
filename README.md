@@ -35,6 +35,7 @@ Niveau 3:
 
 ## Dev
 ### Install
+Copy `.env.example` file to `.env` file and set your database URL and your secret key for JWT token validation.\
 `poetry config virtualenvs.in-project true`\
 `poetry install`\
 `poetry run alembic upgrade head`

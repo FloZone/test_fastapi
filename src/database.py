@@ -3,8 +3,9 @@ from typing import Annotated
 from fastapi import Depends
 from sqlmodel import Session, SQLModel, create_engine
 
-# TODO store to env var
-DATABASE_URL = "postgresql://user:password@localhost:5435/database"
+from .settings import settings
+
+DATABASE_URL = settings.DATABASE_URL
 engine = create_engine(DATABASE_URL)
 
 
