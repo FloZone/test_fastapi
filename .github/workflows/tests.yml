@@ -1,0 +1,25 @@
+name: Run pytest
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - '**'
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    name: run pytest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install Poetry & libs
+        uses: knowsuchagency/poetry-install@v1
+        with:
+          version: 1.8.3
+      - name: Run pytest
+        run: poetry run pytest tests/* --verbose -s
