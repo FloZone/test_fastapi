@@ -17,11 +17,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: Install Poetry
+      - name: Install Poetry & libs
         uses: knowsuchagency/poetry-install@v1
         with:
           version: 1.8.3
-      - name: Install libs
-        run: poetry install
       - name: Run pytest
         run: poetry run pytest tests/* --verbose -s
