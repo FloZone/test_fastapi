@@ -17,36 +17,50 @@ Une réservation est composée de:
 
 ### Règles
 Niveau 1:
-* ~~Créer, modifier et supprimer des ressources~~
-* ~~Tous les utilisateurs peuvent réserver une ressource~~
-* ~~Un utilisateur peut voir ses réservations passés, en cours et à venir~~
-* ~~Un utilisateur peut annuler ses réservations en cours ou à venir~~
-* ~~Un utilisateur peut modifier ses réservations à venir~~
+* Créer, modifier et supprimer des ressources
+* Tous les utilisateurs peuvent réserver une ressource
+* Un utilisateur peut voir ses réservations passés, en cours et à venir
+* Un utilisateur peut annuler ses réservations en cours ou à venir
+* Un utilisateur peut modifier ses réservations à venir
 
 Niveau 2:
-* ~~Mise en place de l'authentification sur l'API~~
-* ~~Permettre à un administrateur de gérer les ressources~~
-* ~~Permettre à un utilisateur de lister les ressources~~
-* ~~Permettre à un administrateur d'accéder à toutes les réservations~~
-* ~~Filtrage sur la liste des ressources (type et localisation)~~
-
-Niveau 3:
-- Mise en place d'OAuth
+* Mise en place de l'authentification sur l'API
+* Permettre à un administrateur de gérer les ressources
+* Permettre à un utilisateur de lister les ressources
+* Permettre à un administrateur d'accéder à toutes les réservations
+* Filtrage sur la liste des ressources (type et localisation)
 
 ## Dev
-### Install
-Copy `.env.example` file to `.env` file and set your database URL and your secret key for JWT token validation.\
-`poetry config virtualenvs.in-project true`\
-`poetry install`\
-`poetry run alembic upgrade head`
+### First install
+Copy the `.env.example` file to a `.env` file and set your database URL and your secret key for JWT token validation.
 
-### Run
-Run DB with `docker compose up -d`\
-Run FastAPI with `cd src && poetry run fastapi dev main.py`
+```
+poetry config virtualenvs.in-project true
+poetry install
+poetry run alembic upgrade head
+```
 
-### Tools
-Format command manually: `poetry run pre-commit run` or `poetry run pre-commit run --all-files`\
-Create migration file: `poetry run alembic revision --autogenerate -m "create XXX table"`\
-Apply migrations: `poetry run alembic upgrade head`\
-Show migration status: `poetry run alembic history --verbose`\
-Run tests: `pytest tests/* --verbose -s`
+### Start
+```
+# Start DB container
+docker compose up -d
+# Start FastAPI
+cd src && poetry run fastapi dev main.py
+```
+
+### Utils
+```
+# Format command manually
+poetry run pre-commit run
+poetry run pre-commit run --all-files
+
+# Create migration file
+poetry run alembic revision --autogenerate -m "create XXX table"
+# Apply migrations
+poetry run alembic upgrade head
+# Show migration status
+poetry run alembic history --verbose
+
+# Run tests
+poetry run pytest tests/* --verbose -s
+```
