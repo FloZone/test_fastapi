@@ -66,10 +66,10 @@ def test_get(client_user, resource_1):
     assert data["room_type"] == resource_1.room_type.value
 
 
-def test_delete(session, client_admin, resource):
+def test_delete(session, client_admin, resource_1):
     response = client_admin.delete("/resources/9999")
     assert response.status_code == 404
 
-    response = client_admin.delete(f"/resources/{resource.id}")
+    response = client_admin.delete(f"/resources/{resource_1.id}")
     assert response.status_code == 204
-    assert not session.get(ResourceInDb, resource.id)
+    assert not session.get(ResourceInDb, resource_1.id)

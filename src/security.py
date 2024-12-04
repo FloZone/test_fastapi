@@ -11,14 +11,13 @@ from sqlmodel import Session, select
 
 from .database import DBSession
 from .modules.users.models import Role, UserInDb
-from .settings import settings
+from .settings import get_settings
 
 # Authent method: login + password -> JWT access token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # Password hash method
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # Access token generation method
-SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -56,7 +55,7 @@ def generate_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, get_settings().SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
@@ -69,7 +68,7 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: DBSessio
     )
     # Validate the access token
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, get_settings().SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception

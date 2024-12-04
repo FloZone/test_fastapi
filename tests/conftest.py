@@ -2,15 +2,27 @@ from datetime import datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
+from src import settings as main_settings
 from src.database import get_session
 from src.main import app
 from src.modules.bookings.models import BookingInDb
 from src.modules.resources.models import ResourceInDb, RoomType
 from src.modules.users.models import Role, UserInDb
 from src.security import get_current_user, hash_password
+
+
+class TestSettings(BaseSettings):
+    __test__ = False
+    DATABASE_URL: str = "dummy"
+    SECRET_KEY: str = "dummy"
+    model_config = SettingsConfigDict()
+
+
+main_settings.Settings = TestSettings
 
 
 @pytest.fixture

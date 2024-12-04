@@ -1,20 +1,13 @@
 from typing import Annotated
 
 from fastapi import Depends
-from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel import Session, create_engine
 
-from .settings import settings
-
-DATABASE_URL = settings.DATABASE_URL
-engine = create_engine(DATABASE_URL)
-
-
-def init_db():
-    SQLModel.metadata.create_all(engine)
+from .settings import get_settings
 
 
 def get_session():
-    with Session(engine) as session:
+    with Session(create_engine(get_settings().DATABASE_URL)) as session:
         yield session
 
 
