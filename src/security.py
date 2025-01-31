@@ -7,7 +7,8 @@ from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
 from pydantic import BaseModel
-from sqlmodel import Session, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
 
 from .database import DBSession
 from .modules.users.models import Role, UserInDb
@@ -37,12 +38,12 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 
-def authenticate_user(username: str, password: str, db: Session) -> UserInDb:
+async def authenticate_user(username: str, password: str, db: AsyncSession) -> UserInDb:
     """
     Validate the given username (used as email) and password and return the corresponding user, of False if creds are
     not matching.
     """
-    user = db.exec(select(UserInDb).where(UserInDb.email == username)).first()
+    user = (await db.execute(select(UserInDb).where(UserInDb.email == username))).scalars().first()
     if not user:
         return False
     if not verify_password(password, user.password):
@@ -59,7 +60,7 @@ def generate_access_token(data: dict):
     return encoded_jwt
 
 
-def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: DBSession):
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: DBSession):
     """Get current authenticated user from JWT."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -75,7 +76,7 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: DBSessio
     except InvalidTokenError:
         raise credentials_exception
     # Get the corresponding user
-    user = db.exec(select(UserInDb).where(UserInDb.email == username)).first()
+    user = (await db.execute(select(UserInDb).where(UserInDb.email == username))).scalars().first()
     if not user:
         raise credentials_exception
     return user

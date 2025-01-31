@@ -52,9 +52,9 @@ async def hello_world():
 
 
 @app.post("/token")
-def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: DBSession) -> Token:
+async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: DBSession) -> Token:
     """Login user with his email and password and return access_token to access the API."""
-    user = authenticate_user(form_data.username, form_data.password, db)
+    user = await authenticate_user(form_data.username, form_data.password, db)
 
     if not user:
         raise HTTPException(

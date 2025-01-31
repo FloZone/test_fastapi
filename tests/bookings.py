@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 
+import pytest
+
 from src.modules.bookings.models import BookingInDb
 
 
@@ -56,7 +58,8 @@ def test_create(client_user, resource_1):
     assert response.status_code == 200
 
 
-def test_list(session, client_user, base_user, base_admin, resource_1):
+@pytest.mark.asyncio
+async def test_list(session, client_user, base_user, base_admin, resource_1):
     response = client_user.get("/bookings/")
     assert response.status_code == 200
     # Because of fixtures
@@ -75,11 +78,11 @@ def test_list(session, client_user, base_user, base_admin, resource_1):
     session.add(booking_2)
     session.add(booking_3)
     session.add(booking_4)
-    session.commit()
-    session.refresh(booking_1)
-    session.refresh(booking_2)
-    session.refresh(booking_3)
-    session.refresh(booking_4)
+    await session.commit()
+    await session.refresh(booking_1)
+    await session.refresh(booking_2)
+    await session.refresh(booking_3)
+    await session.refresh(booking_4)
 
     response = client_user.get("/bookings/")
     assert response.status_code == 200
@@ -94,7 +97,8 @@ def test_list(session, client_user, base_user, base_admin, resource_1):
     assert len(response.json()) == 1
 
 
-def test_list_all(session, client_admin, base_user, base_admin, resource_1):
+@pytest.mark.asyncio
+async def test_list_all(session, client_admin, base_user, base_admin, resource_1):
     response = client_admin.get("/bookings/all")
     assert response.status_code == 200
     # Because of fixtures
@@ -111,10 +115,10 @@ def test_list_all(session, client_admin, base_user, base_admin, resource_1):
     session.add(booking_1)
     session.add(booking_2)
     session.add(booking_3)
-    session.commit()
-    session.refresh(booking_1)
-    session.refresh(booking_2)
-    session.refresh(booking_3)
+    await session.commit()
+    await session.refresh(booking_1)
+    await session.refresh(booking_2)
+    await session.refresh(booking_3)
 
     response = client_admin.get("/bookings/all")
     assert response.status_code == 200
@@ -243,7 +247,8 @@ def test_update_admin(client_admin, booking_user, booking_admin):
     assert data["resource_id"] == booking_data["resource_id"]
 
 
-def test_delete_user(session, client_user, base_user, resource_1, booking_user, booking_admin):
+@pytest.mark.asyncio
+async def test_delete_user(session, client_user, base_user, resource_1, booking_user, booking_admin):
     response = client_user.delete("/bookings/9999")
     assert response.status_code == 404
 
@@ -253,7 +258,7 @@ def test_delete_user(session, client_user, base_user, resource_1, booking_user, 
     # Delete future booking
     response = client_user.delete(f"/bookings/{booking_user.id}")
     assert response.status_code == 204
-    assert not session.get(BookingInDb, booking_user.id)
+    assert not await session.get(BookingInDb, booking_user.id)
 
     # Delete current booking
     now = datetime.now().astimezone()
@@ -261,11 +266,11 @@ def test_delete_user(session, client_user, base_user, resource_1, booking_user, 
     t2 = now + timedelta(minutes=5)
     booking = BookingInDb(title="booking", owner_id=base_user.id, resource_id=resource_1.id, start=t1, end=t2)
     session.add(booking)
-    session.commit()
-    session.refresh(booking)
+    await session.commit()
+    await session.refresh(booking)
     response = client_user.delete(f"/bookings/{booking.id}")
     assert response.status_code == 204
-    assert not session.get(BookingInDb, booking.id)
+    assert not await session.get(BookingInDb, booking.id)
 
     # Cannot delete past booking
     now = datetime.now().astimezone()
@@ -273,20 +278,21 @@ def test_delete_user(session, client_user, base_user, resource_1, booking_user, 
     t2 = now - timedelta(hours=1)
     booking = BookingInDb(title="booking", owner_id=base_user.id, resource_id=resource_1.id, start=t1, end=t2)
     session.add(booking)
-    session.commit()
-    session.refresh(booking)
+    await session.commit()
+    await session.refresh(booking)
     response = client_user.delete(f"/bookings/{booking.id}")
     assert response.status_code == 400
 
 
-def test_delete_admin(session, client_admin, booking_user, booking_admin):
+@pytest.mark.asyncio
+async def test_delete_admin(session, client_admin, booking_user, booking_admin):
     response = client_admin.delete("/bookings/9999")
     assert response.status_code == 404
 
     response = client_admin.delete(f"/bookings/{booking_admin.id}")
     assert response.status_code == 204
-    assert not session.get(BookingInDb, booking_admin.id)
+    assert not await session.get(BookingInDb, booking_admin.id)
 
     response = client_admin.delete(f"/bookings/{booking_user.id}")
     assert response.status_code == 204
-    assert not session.get(BookingInDb, booking_user.id)
+    assert not await session.get(BookingInDb, booking_user.id)

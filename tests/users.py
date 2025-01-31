@@ -1,3 +1,5 @@
+import pytest
+
 from src.modules.users.models import Role, UserInDb
 
 
@@ -18,7 +20,8 @@ def test_create(client):
     assert response.status_code == 400
 
 
-def test_list(session, client_user):
+@pytest.mark.asyncio
+async def test_list(session, client_user):
     response = client_user.get("/users/")
     assert response.status_code == 200
     # Because of fixtures
@@ -28,9 +31,9 @@ def test_list(session, client_user):
     user_2 = UserInDb(name="user2", email="user2@test.com", password="pwd")
     session.add(user_1)
     session.add(user_2)
-    session.commit()
-    session.refresh(user_1)
-    session.refresh(user_2)
+    await session.commit()
+    await session.refresh(user_1)
+    await session.refresh(user_2)
 
     response = client_user.get("/users/")
     assert response.status_code == 200
@@ -50,10 +53,11 @@ def test_get(session, client_user, base_user):
     assert data["role"] == base_user.role.value
 
 
-def test_delete(session, client_admin, base_user):
+@pytest.mark.asyncio
+async def test_delete(session, client_admin, base_user):
     response = client_admin.delete("/users/9999")
     assert response.status_code == 404
 
     response = client_admin.delete(f"/users/{base_user.id}")
     assert response.status_code == 204
-    assert not session.get(UserInDb, base_user.id)
+    assert not await session.get(UserInDb, base_user.id)

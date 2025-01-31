@@ -1,3 +1,5 @@
+import pytest
+
 from src.modules.resources.models import ResourceInDb, RoomType
 
 
@@ -18,7 +20,8 @@ def test_create(client_admin):
     assert response.status_code == 400
 
 
-def test_list(session, client_user):
+@pytest.mark.asyncio
+async def test_list(session, client_user):
     response = client_user.get("/resources/")
     assert response.status_code == 200
     # Because of fixtures
@@ -30,10 +33,10 @@ def test_list(session, client_user):
     session.add(resource_1)
     session.add(resource_2)
     session.add(resource_3)
-    session.commit()
-    session.refresh(resource_1)
-    session.refresh(resource_2)
-    session.refresh(resource_3)
+    await session.commit()
+    await session.refresh(resource_1)
+    await session.refresh(resource_2)
+    await session.refresh(resource_3)
 
     response = client_user.get("/resources/")
     assert response.status_code == 200
@@ -66,10 +69,11 @@ def test_get(client_user, resource_1):
     assert data["room_type"] == resource_1.room_type.value
 
 
-def test_delete(session, client_admin, resource_1):
+@pytest.mark.asyncio
+async def test_delete(session, client_admin, resource_1):
     response = client_admin.delete("/resources/9999")
     assert response.status_code == 404
 
     response = client_admin.delete(f"/resources/{resource_1.id}")
     assert response.status_code == 204
-    assert not session.get(ResourceInDb, resource_1.id)
+    assert not await session.get(ResourceInDb, resource_1.id)

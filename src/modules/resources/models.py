@@ -4,7 +4,8 @@ from enum import auto
 
 from pydantic import NonNegativeInt, field_validator
 from sqlalchemy import CheckConstraint, Column, Enum
-from sqlmodel import Field, Relationship, Session, SQLModel, and_, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import Field, Relationship, SQLModel, and_, or_, select
 
 
 class RoomType(enum.StrEnum):
@@ -46,8 +47,8 @@ class ResourceInDb(ResourceOut, table=True):
         return value.lower()
 
     @classmethod
-    def is_available(
-        cls, db: Session, resource_id: int, start: datetime, end: datetime, current_booking_id: int = None
+    async def is_available(
+        cls, db: AsyncSession, resource_id: int, start: datetime, end: datetime, current_booking_id: int = None
     ) -> bool:
         """Return whether the resource is available on the given dates excluding the current booking if provided."""
         from ..bookings.models import BookingInDb
@@ -64,5 +65,5 @@ class ResourceInDb(ResourceOut, table=True):
                 )
             )
         )
-        existing_bookings = db.exec(statement).all()
+        existing_bookings = (await db.execute(statement)).scalars().all()
         return False if existing_bookings else True
