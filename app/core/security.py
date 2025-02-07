@@ -10,12 +10,12 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from .database import DBSession
-from .modules.users.models import Role, UserInDb
-from .settings import get_settings
+from app.core.database import DBSession
+from app.core.settings import get_settings
+from app.models.user_model import Role, UserInDb
 
 # Authent method: login + password -> JWT access token
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=get_settings().API_PATH + "/token")
 # Password hash method
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # Access token generation method
@@ -38,6 +38,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 
+# TODO use user_repo & user_service
 async def authenticate_user(username: str, password: str, db: AsyncSession) -> UserInDb:
     """
     Validate the given username (used as email) and password and return the corresponding user, of False if creds are
@@ -82,10 +83,6 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: DB
     return user
 
 
-# Helper for getting current authenticated user in endpoints
-AuthenticatedUser = Annotated[UserInDb, Depends(get_current_user)]
-
-
 class AllowRole:
     """Helper to check if currently connected user has the given rights."""
 
@@ -97,3 +94,7 @@ class AllowRole:
             if user.role.value >= role.value:
                 return True
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
+
+# Helper for getting current authenticated user in endpoints
+AuthenticatedUser = Annotated[UserInDb, Depends(get_current_user)]

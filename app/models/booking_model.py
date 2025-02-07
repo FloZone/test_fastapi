@@ -4,11 +4,13 @@ from pydantic import ValidationInfo, field_validator
 from sqlalchemy import Column, DateTime
 from sqlmodel import Field, Relationship, SQLModel
 
-from ...modules.resources.models import ResourceInDb
-from ...modules.users.models import UserInDb
+from app.models.resource_model import ResourceInDb
+from app.models.user_model import UserInDb
 
 
-class BookingBase(SQLModel):
+class BookingInDb(SQLModel, table=True):
+    __tablename__ = "booking"
+    id: int | None = Field(description="Resource ID", default=None, primary_key=True)
     title: str = Field(description="Booking subject", nullable=False)
     start: datetime = Field(
         description="Booking start date & time", sa_column=Column(DateTime(timezone=True), nullable=False)
@@ -16,21 +18,6 @@ class BookingBase(SQLModel):
     end: datetime = Field(
         description="Booking end date & time", sa_column=Column(DateTime(timezone=True), nullable=False)
     )
-
-
-class BookingIn(BookingBase):
-    resource_id: int = Field(description="Resource ID to book", nullable=False)
-
-
-class BookingOut(BookingBase):
-    id: int = Field(description="Booking ID", nullable=False)
-    resource_id: int = Field(description="Booked resource ID", nullable=False)
-
-
-class BookingInDb(BookingBase, table=True):
-    __tablename__ = "booking"
-    id: int | None = Field(description="Resource ID", default=None, primary_key=True)
-
     owner_id: int = Field(nullable=False, foreign_key="user.id")
     owner: UserInDb = Relationship(back_populates="bookings")
 

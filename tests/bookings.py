@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from src.modules.bookings.models import BookingInDb
+from app.models.booking_model import BookingInDb
 
 
 def test_create(client_user, resource_1):
@@ -21,19 +21,19 @@ def test_create(client_user, resource_1):
     # Booking in the past
     booking_data["start"] = start_past
     booking_data["end"] = end_past
-    response = client_user.post("/bookings/", json=booking_data)
+    response = client_user.post("/api/v1/bookings/", json=booking_data)
     assert response.status_code == 400
 
     # End date before start date
     booking_data["start"] = end_future_1
     booking_data["end"] = start_future_1
-    response = client_user.post("/bookings/", json=booking_data)
+    response = client_user.post("/api/v1/bookings/", json=booking_data)
     assert response.status_code == 400
 
     # First booking
     booking_data["start"] = start_future_1
     booking_data["end"] = end_future_1
-    response = client_user.post("/bookings/", json=booking_data)
+    response = client_user.post("/api/v1/bookings/", json=booking_data)
     data = response.json()
     assert response.status_code == 200
     assert data["title"] == "Booking1"
@@ -42,25 +42,25 @@ def test_create(client_user, resource_1):
     # Second booking
     booking_data["start"] = start_future_3
     booking_data["end"] = end_future_3
-    response = client_user.post("/bookings/", json=booking_data)
+    response = client_user.post("/api/v1/bookings/", json=booking_data)
     assert response.status_code == 200
 
     # Not available
     booking_data["start"] = middle_1
     booking_data["end"] = end_future_2
-    response = client_user.post("/bookings/", json=booking_data)
+    response = client_user.post("/api/v1/bookings/", json=booking_data)
     assert response.status_code == 400
 
     # Third booking
     booking_data["start"] = start_future_2
     booking_data["end"] = end_future_2
-    response = client_user.post("/bookings/", json=booking_data)
+    response = client_user.post("/api/v1/bookings/", json=booking_data)
     assert response.status_code == 200
 
 
 @pytest.mark.asyncio
 async def test_list(session, client_user, base_user, base_admin, resource_1):
-    response = client_user.get("/bookings/")
+    response = client_user.get("/api/v1/bookings/")
     assert response.status_code == 200
     # Because of fixtures
     booking_count = len(response.json())
@@ -84,22 +84,22 @@ async def test_list(session, client_user, base_user, base_admin, resource_1):
     await session.refresh(booking_3)
     await session.refresh(booking_4)
 
-    response = client_user.get("/bookings/")
+    response = client_user.get("/api/v1/bookings/")
     assert response.status_code == 200
     assert len(response.json()) == booking_count + 3
 
-    response = client_user.get("/bookings/", params={"title": "burger"})
+    response = client_user.get("/api/v1/bookings/", params={"title": "burger"})
     assert response.status_code == 200
     assert len(response.json()) == 3
 
-    response = client_user.get("/bookings/", params={"title": "munster"})
+    response = client_user.get("/api/v1/bookings/", params={"title": "munster"})
     assert response.status_code == 200
     assert len(response.json()) == 1
 
 
 @pytest.mark.asyncio
 async def test_list_all(session, client_admin, base_user, base_admin, resource_1):
-    response = client_admin.get("/bookings/all")
+    response = client_admin.get("/api/v1/bookings/all")
     assert response.status_code == 200
     # Because of fixtures
     booking_count = len(response.json())
@@ -120,19 +120,19 @@ async def test_list_all(session, client_admin, base_user, base_admin, resource_1
     await session.refresh(booking_2)
     await session.refresh(booking_3)
 
-    response = client_admin.get("/bookings/all")
+    response = client_admin.get("/api/v1/bookings/all")
     assert response.status_code == 200
     assert len(response.json()) == booking_count + 3
 
 
 def test_get_user(client_user, booking_user, booking_admin):
-    response = client_user.get("/bookings/9999")
+    response = client_user.get("/api/v1/bookings/9999")
     assert response.status_code == 404
 
-    response = client_user.get(f"/bookings/{booking_admin.id}")
+    response = client_user.get(f"/api/v1/bookings/{booking_admin.id}")
     assert response.status_code == 404
 
-    response = client_user.get(f"/bookings/{booking_user.id}")
+    response = client_user.get(f"/api/v1/bookings/{booking_user.id}")
     data = response.json()
     assert response.status_code == 200
     assert data["id"] == booking_user.id
@@ -142,10 +142,10 @@ def test_get_user(client_user, booking_user, booking_admin):
 
 
 def test_get_admin(client_admin, booking_user, booking_admin):
-    response = client_admin.get("/bookings/9999")
+    response = client_admin.get("/api/v1/bookings/9999")
     assert response.status_code == 404
 
-    response = client_admin.get(f"/bookings/{booking_admin.id}")
+    response = client_admin.get(f"/api/v1/bookings/{booking_admin.id}")
     data = response.json()
     assert response.status_code == 200
     assert data["id"] == booking_admin.id
@@ -153,7 +153,7 @@ def test_get_admin(client_admin, booking_user, booking_admin):
     assert datetime.fromisoformat(data["start"]) == booking_admin.start
     assert datetime.fromisoformat(data["end"]) == booking_admin.end
 
-    response = client_admin.get(f"/bookings/{booking_user.id}")
+    response = client_admin.get(f"/api/v1/bookings/{booking_user.id}")
     data = response.json()
     assert response.status_code == 200
     assert data["id"] == booking_user.id
@@ -169,15 +169,15 @@ def test_update_user(client_user, booking_user, booking_admin, resource_2):
         "start": booking_user.start.astimezone().isoformat(),
         "end": booking_user.end.astimezone().isoformat(),
     }
-    response = client_user.put("/bookings/9999", json=booking_data)
+    response = client_user.put("/api/v1/bookings/9999", json=booking_data)
     assert response.status_code == 404
 
-    response = client_user.put(f"/bookings/{booking_admin.id}", json=booking_data)
+    response = client_user.put(f"/api/v1/bookings/{booking_admin.id}", json=booking_data)
     assert response.status_code == 404
 
     # Update title
     booking_data["title"] = booking_data["title"] + "_edited"
-    response = client_user.put(f"/bookings/{booking_user.id}", json=booking_data)
+    response = client_user.put(f"/api/v1/bookings/{booking_user.id}", json=booking_data)
     data = response.json()
     assert response.status_code == 200
     assert data["id"] == booking_user.id
@@ -189,7 +189,7 @@ def test_update_user(client_user, booking_user, booking_admin, resource_2):
     # Update end
     new_date = booking_user.end + timedelta(hours=1)
     booking_data["end"] = new_date.astimezone().isoformat()
-    response = client_user.put(f"/bookings/{booking_user.id}", json=booking_data)
+    response = client_user.put(f"/api/v1/bookings/{booking_user.id}", json=booking_data)
     data = response.json()
     assert response.status_code == 200
     assert data["id"] == booking_user.id
@@ -200,13 +200,13 @@ def test_update_user(client_user, booking_user, booking_admin, resource_2):
 
     # Not available
     booking_data["end"] = booking_admin.end.astimezone().isoformat()
-    response = client_user.put(f"/bookings/{booking_user.id}", json=booking_data)
+    response = client_user.put(f"/api/v1/bookings/{booking_user.id}", json=booking_data)
     assert response.status_code == 400
 
     # Change resource
     booking_data["end"] = booking_user.end.astimezone().isoformat()
     booking_data["resource_id"] = resource_2.id
-    response = client_user.put(f"/bookings/{booking_user.id}", json=booking_data)
+    response = client_user.put(f"/api/v1/bookings/{booking_user.id}", json=booking_data)
     data = response.json()
     assert response.status_code == 200
     assert data["id"] == booking_user.id
@@ -221,11 +221,11 @@ def test_update_admin(client_admin, booking_user, booking_admin):
         "start": booking_user.start.astimezone().isoformat(),
         "end": booking_user.end.astimezone().isoformat(),
     }
-    response = client_admin.put("/bookings/9999", json=booking_data)
+    response = client_admin.put("/api/v1/bookings/9999", json=booking_data)
     assert response.status_code == 404
 
     # Update other user booking
-    response = client_admin.put(f"/bookings/{booking_user.id}", json=booking_data)
+    response = client_admin.put(f"/api/v1/bookings/{booking_user.id}", json=booking_data)
     data = response.json()
     assert response.status_code == 200
     assert data["id"] == booking_user.id
@@ -239,7 +239,7 @@ def test_update_admin(client_admin, booking_user, booking_admin):
         "end": booking_admin.end.astimezone().isoformat(),
     }
     # Update admin booking
-    response = client_admin.put(f"/bookings/{booking_admin.id}", json=booking_data)
+    response = client_admin.put(f"/api/v1/bookings/{booking_admin.id}", json=booking_data)
     data = response.json()
     assert response.status_code == 200
     assert data["id"] == booking_admin.id
@@ -249,14 +249,14 @@ def test_update_admin(client_admin, booking_user, booking_admin):
 
 @pytest.mark.asyncio
 async def test_delete_user(session, client_user, base_user, resource_1, booking_user, booking_admin):
-    response = client_user.delete("/bookings/9999")
+    response = client_user.delete("/api/v1/bookings/9999")
     assert response.status_code == 404
 
-    response = client_user.delete(f"/bookings/{booking_admin.id}")
+    response = client_user.delete(f"/api/v1/bookings/{booking_admin.id}")
     assert response.status_code == 404
 
     # Delete future booking
-    response = client_user.delete(f"/bookings/{booking_user.id}")
+    response = client_user.delete(f"/api/v1/bookings/{booking_user.id}")
     assert response.status_code == 204
     assert not await session.get(BookingInDb, booking_user.id)
 
@@ -268,7 +268,7 @@ async def test_delete_user(session, client_user, base_user, resource_1, booking_
     session.add(booking)
     await session.commit()
     await session.refresh(booking)
-    response = client_user.delete(f"/bookings/{booking.id}")
+    response = client_user.delete(f"/api/v1/bookings/{booking.id}")
     assert response.status_code == 204
     assert not await session.get(BookingInDb, booking.id)
 
@@ -280,19 +280,19 @@ async def test_delete_user(session, client_user, base_user, resource_1, booking_
     session.add(booking)
     await session.commit()
     await session.refresh(booking)
-    response = client_user.delete(f"/bookings/{booking.id}")
+    response = client_user.delete(f"/api/v1/bookings/{booking.id}")
     assert response.status_code == 400
 
 
 @pytest.mark.asyncio
 async def test_delete_admin(session, client_admin, booking_user, booking_admin):
-    response = client_admin.delete("/bookings/9999")
+    response = client_admin.delete("/api/v1/bookings/9999")
     assert response.status_code == 404
 
-    response = client_admin.delete(f"/bookings/{booking_admin.id}")
+    response = client_admin.delete(f"/api/v1/bookings/{booking_admin.id}")
     assert response.status_code == 204
     assert not await session.get(BookingInDb, booking_admin.id)
 
-    response = client_admin.delete(f"/bookings/{booking_user.id}")
+    response = client_admin.delete(f"/api/v1/bookings/{booking_user.id}")
     assert response.status_code == 204
     assert not await session.get(BookingInDb, booking_user.id)

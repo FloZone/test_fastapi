@@ -8,13 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlmodel import SQLModel
 
-from src import settings as main_settings
-from src.database import get_session
-from src.main import app
-from src.modules.bookings.models import BookingInDb
-from src.modules.resources.models import ResourceInDb, RoomType
-from src.modules.users.models import Role, UserInDb
-from src.security import get_current_user, hash_password
+from app.core import settings as main_settings
+from app.core.database import get_session
+from app.core.security import get_current_user, hash_password
+from app.main import app
+from app.models.booking_model import BookingInDb
+from app.models.resource_model import ResourceInDb, RoomType
+from app.models.user_model import Role, UserInDb
 
 
 class TestSettings(BaseSettings):
@@ -43,8 +43,7 @@ async def session():
 
 @pytest_asyncio.fixture
 def client(session):
-    """Test API client that depends on the session fixture."""
-
+    """Fixture test API client, not authenticated."""
     app.dependency_overrides[get_session] = lambda: session
     client = TestClient(app)
     yield client
@@ -53,7 +52,7 @@ def client(session):
 
 @pytest.fixture
 def client_user(session, base_user):
-    """Test API client that depends on the session fixture, authenticated with 'base_user' user."""
+    """Fixture test API client, authenticated with 'base_user' user."""
     app.dependency_overrides[get_current_user] = lambda: base_user
     app.dependency_overrides[get_session] = lambda: session
     client = TestClient(app)
@@ -63,7 +62,7 @@ def client_user(session, base_user):
 
 @pytest.fixture
 def client_admin(session, base_admin):
-    """Test API client that depends on the session fixture, authenticated with 'base_admin' user."""
+    """Fixture test API client, authenticated with 'base_admin' user."""
     app.dependency_overrides[get_current_user] = lambda: base_admin
     app.dependency_overrides[get_session] = lambda: session
     client = TestClient(app)
@@ -73,7 +72,10 @@ def client_admin(session, base_admin):
 
 @pytest_asyncio.fixture
 async def base_user(session) -> UserInDb:
-    user = UserInDb(name="Fixture user", email="fixture_user@test.com", password=hash_password("password"))
+    """Fixture user with USER role."""
+    user = UserInDb(
+        name="Fixture user", email="fixture_user@test.com", password=hash_password("password"), role=Role.USER
+    )
     session.add(user)
     await session.commit()
     await session.refresh(user)
@@ -82,6 +84,7 @@ async def base_user(session) -> UserInDb:
 
 @pytest_asyncio.fixture
 async def base_admin(session) -> UserInDb:
+    """Fixture user with ADMIN role."""
     user = UserInDb(
         name="Fixture admin", email="fixture_admin@test.com", password=hash_password("password"), role=Role.ADMIN
     )
@@ -93,6 +96,7 @@ async def base_admin(session) -> UserInDb:
 
 @pytest_asyncio.fixture
 async def resource_1(session) -> ResourceInDb:
+    """Fixture resource."""
     resource = ResourceInDb(
         name="fixture meeting room", location="france", capacity=10, room_type=RoomType.MEETING_ROOM
     )
@@ -104,6 +108,7 @@ async def resource_1(session) -> ResourceInDb:
 
 @pytest_asyncio.fixture()
 async def resource_2(session) -> ResourceInDb:
+    """Fixture resource."""
     resource = ResourceInDb(name="fixture auditorium", location="spain", capacity=250, room_type=RoomType.AUDITORIUM)
     session.add(resource)
     await session.commit()
@@ -113,6 +118,7 @@ async def resource_2(session) -> ResourceInDb:
 
 @pytest_asyncio.fixture()
 async def booking_user(session, resource_1, base_user) -> BookingInDb:
+    """Fixture booking from USER user."""
     now = datetime.now().astimezone()
     start = now + timedelta(hours=1)
     end = now + timedelta(hours=2)
@@ -127,6 +133,7 @@ async def booking_user(session, resource_1, base_user) -> BookingInDb:
 
 @pytest_asyncio.fixture()
 async def booking_admin(session, resource_1, base_admin) -> BookingInDb:
+    """Fixture booking from ADMIN user."""
     now = datetime.now().astimezone()
     start = now + timedelta(hours=4)
     end = now + timedelta(hours=5)

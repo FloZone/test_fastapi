@@ -4,10 +4,10 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
-from src.database import DATABASE_URL
-from src.modules.bookings.models import BookingInDb  # noqa
-from src.modules.resources.models import ResourceInDb  # noqa
-from src.modules.users.models import UserInDb  # noqa
+from app.core.database import DATABASE_URL
+from app.modules.bookings.models import BookingInDb  # noqa
+from app.modules.resources.models import ResourceInDb  # noqa
+from app.modules.users.models import UserInDb  # noqa
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

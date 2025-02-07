@@ -4,7 +4,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
-from .settings import get_settings
+from app.core.settings import get_settings
 
 engine = create_async_engine(get_settings().DATABASE_URL)
 
@@ -16,4 +16,5 @@ async def get_session():
         yield session
 
 
+# TODO enlever le Annotated car moins compréhensible dans le code
 DBSession = Annotated[AsyncSession, Depends(get_session)]

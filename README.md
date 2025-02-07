@@ -45,7 +45,7 @@ poetry run alembic upgrade head
 # Start DB container
 docker compose up -d
 # Start FastAPI
-cd src && poetry run fastapi dev main.py
+cd app && poetry run fastapi dev main.py
 ```
 
 ### Utils
@@ -62,5 +62,5 @@ poetry run alembic upgrade head
 poetry run alembic history --verbose
 
 # Run tests
-poetry run pytest tests/* --verbose -s
+poetry run pytest tests/* --verbose -s -x
 ```

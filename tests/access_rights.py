@@ -14,25 +14,25 @@ class Access(Enum):
     "method,url,access",
     [
         # Main endpoints
-        ("get", "/", Access.OPEN),
-        ("get", "/me", Access.USER),
+        ("get", "/api/", Access.OPEN),
+        ("get", "/api/me", Access.USER),
         # Users endpoints
-        ("post", "/users/", Access.OPEN),
-        ("get", "/users/", Access.USER),
-        ("get", "/users/1", Access.USER),
-        ("delete", "/users/1", Access.ADMIN),
+        ("post", "/api/v1/users/", Access.OPEN),
+        ("get", "/api/v1/users/", Access.USER),
+        ("get", "/api/v1/users/1", Access.USER),
+        ("delete", "/api/v1/users/1", Access.ADMIN),
         # Resources endpoints
-        ("post", "/resources/", Access.ADMIN),
-        ("get", "/resources/", Access.USER),
-        ("get", "/resources/1", Access.USER),
-        ("delete", "/resources/1", Access.ADMIN),
+        ("post", "/api/v1/resources/", Access.ADMIN),
+        ("get", "/api/v1/resources/", Access.USER),
+        ("get", "/api/v1/resources/1", Access.USER),
+        ("delete", "/api/v1/resources/1", Access.ADMIN),
         # Bookings endpoints
-        ("post", "/bookings/", Access.USER),
-        ("get", "/bookings/", Access.USER),
-        ("get", "/bookings/all", Access.ADMIN),
-        ("get", "/bookings/1", Access.USER),
-        ("put", "/bookings/1", Access.USER),
-        ("delete", "/bookings/1", Access.USER),
+        ("post", "/api/v1/bookings/", Access.USER),
+        ("get", "/api/v1/bookings/", Access.USER),
+        ("get", "/api/v1/bookings/all", Access.ADMIN),
+        ("get", "/api/v1/bookings/1", Access.USER),
+        ("put", "/api/v1/bookings/1", Access.USER),
+        ("delete", "/api/v1/bookings/1", Access.USER),
     ],
 )
 def test_access_rights(fastapi_client, method, url, access, request):

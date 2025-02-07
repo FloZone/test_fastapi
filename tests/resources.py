@@ -1,11 +1,11 @@
 import pytest
 
-from src.modules.resources.models import ResourceInDb, RoomType
+from app.models.resource_model import ResourceInDb, RoomType
 
 
 def test_create(client_admin):
     resource_data = {"name": "SuperDesk", "location": "FRANCE", "capacity": 5, "room_type": RoomType.DESK}
-    response = client_admin.post("/resources/", json=resource_data)
+    response = client_admin.post("/api/v1/resources/", json=resource_data)
     data = response.json()
 
     assert response.status_code == 200
@@ -16,13 +16,13 @@ def test_create(client_admin):
     assert data["id"] is not None
 
     # Cannot create 2 resources with same email
-    response = client_admin.post("/resources/", json=resource_data)
+    response = client_admin.post("/api/v1/resources/", json=resource_data)
     assert response.status_code == 400
 
 
 @pytest.mark.asyncio
 async def test_list(session, client_user):
-    response = client_user.get("/resources/")
+    response = client_user.get("/api/v1/resources/")
     assert response.status_code == 200
     # Because of fixtures
     resource_count = len(response.json())
@@ -38,28 +38,28 @@ async def test_list(session, client_user):
     await session.refresh(resource_2)
     await session.refresh(resource_3)
 
-    response = client_user.get("/resources/")
+    response = client_user.get("/api/v1/resources/")
     assert response.status_code == 200
     assert len(response.json()) == resource_count + 3
 
-    response = client_user.get("/resources/", params={"name": "room"})
+    response = client_user.get("/api/v1/resources/", params={"name": "room"})
     assert response.status_code == 200
     assert len(response.json()) == 2
 
-    response = client_user.get("/resources/", params={"location": "it"})
+    response = client_user.get("/api/v1/resources/", params={"location": "it"})
     assert response.status_code == 200
     assert len(response.json()) == 1
 
-    response = client_user.get("/resources/", params={"name": "ro", "location": "fra"})
+    response = client_user.get("/api/v1/resources/", params={"name": "ro", "location": "fra"})
     assert response.status_code == 200
     assert len(response.json()) == 1
 
 
 def test_get(client_user, resource_1):
-    response = client_user.get("/resources/9999")
+    response = client_user.get("/api/v1/resources/9999")
     assert response.status_code == 404
 
-    response = client_user.get(f"/resources/{resource_1.id}")
+    response = client_user.get(f"/api/v1/resources/{resource_1.id}")
     data = response.json()
     assert response.status_code == 200
     assert data["id"] == resource_1.id
@@ -71,9 +71,9 @@ def test_get(client_user, resource_1):
 
 @pytest.mark.asyncio
 async def test_delete(session, client_admin, resource_1):
-    response = client_admin.delete("/resources/9999")
+    response = client_admin.delete("/api/v1/resources/9999")
     assert response.status_code == 404
 
-    response = client_admin.delete(f"/resources/{resource_1.id}")
+    response = client_admin.delete(f"/api/v1/resources/{resource_1.id}")
     assert response.status_code == 204
     assert not await session.get(ResourceInDb, resource_1.id)
