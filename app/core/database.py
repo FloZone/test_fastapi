@@ -16,5 +16,4 @@ async def get_session():
         yield session
 
 
-# TODO enlever le Annotated car moins compréhensible dans le code
 DBSession = Annotated[AsyncSession, Depends(get_session)]

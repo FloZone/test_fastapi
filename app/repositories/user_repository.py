@@ -5,10 +5,11 @@ from sqlmodel import select
 from app.core.database import DBSession
 from app.core.exceptions import DuplicateException, NotFoundException, ValidationException
 from app.models.user_model import UserInDb
+from app.repositories.repository import AbstractRepository
 from app.schema.user_schema import UserWithId, UserWithPwd
 
 
-class UserRepository:
+class UserRepository(AbstractRepository):
     def __init__(self, db: DBSession):
         self.db = db
 
@@ -41,5 +42,15 @@ class UserRepository:
             raise NotFoundException()
         return user_db
 
+    async def get_with_username(self, username: str) -> UserWithId:
+        user_db = (await self.db.execute(select(UserInDb).where(UserInDb.email == username))).scalars().first()
+        if not user_db:
+            raise NotFoundException()
+        return user_db
+
     async def get_list(self, offset: int, limit: int) -> list[UserWithId]:
         return (await self.db.execute(select(UserInDb).offset(offset).limit(limit))).scalars().all()
+
+    def update(self, id: int, object):
+        """We don't allow user modification."""
+        pass

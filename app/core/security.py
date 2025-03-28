@@ -7,12 +7,13 @@ from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.core.database import DBSession
+from app.core.exceptions import NotFoundException
 from app.core.settings import get_settings
 from app.models.user_model import Role, UserInDb
+from app.services.user_service import UserService
 
 # Authent method: login + password -> JWT access token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=get_settings().API_PATH + "/token")
@@ -38,14 +39,14 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 
-# TODO use user_repo & user_service
-async def authenticate_user(username: str, password: str, db: AsyncSession) -> UserInDb:
+async def authenticate_user(username: str, password: str, user_service: UserService) -> UserInDb:
     """
     Validate the given username (used as email) and password and return the corresponding user, of False if creds are
     not matching.
     """
-    user = (await db.execute(select(UserInDb).where(UserInDb.email == username))).scalars().first()
-    if not user:
+    try:
+        user = await user_service.get_with_username(username)
+    except NotFoundException:
         return False
     if not verify_password(password, user.password):
         return False

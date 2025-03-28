@@ -31,11 +31,11 @@ main_settings.Settings = TestSettings
 async def session():
     """Database session fixture with in memory database."""
     engine = create_async_engine("sqlite+aiosqlite:///:memory:", connect_args={"check_same_thread": False})
-    DbAsyncSession = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+    async_session = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
-    async with DbAsyncSession() as session:
+    async with async_session() as session:
         yield session
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.drop_all)

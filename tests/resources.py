@@ -77,3 +77,36 @@ async def test_delete(session, client_admin, resource_1):
     response = client_admin.delete(f"/api/v1/resources/{resource_1.id}")
     assert response.status_code == 204
     assert not await session.get(ResourceInDb, resource_1.id)
+
+
+@pytest.mark.asyncio
+async def test_update(client_admin, resource_1):
+    resource_data = {
+        "name": resource_1.name,
+        "location": resource_1.location,
+        "capacity": resource_1.capacity,
+        "room_type": resource_1.room_type,
+    }
+
+    # Update name & location
+    resource_data["name"] = resource_data["name"] + "_edited"
+    resource_data["location"] = resource_data["location"] + "_edited"
+    response = client_admin.put(f"/api/v1/resources/{resource_1.id}", json=resource_data)
+    data = response.json()
+    assert response.status_code == 200
+    assert data["id"] == resource_1.id
+    assert data["name"] == resource_data["name"]
+    assert data["location"] == resource_data["location"]
+    assert data["capacity"] == resource_data["capacity"]
+    assert data["room_type"] == resource_data["room_type"]
+
+    # Update capacity
+    resource_data["capacity"] = resource_data["capacity"] + 2
+    response = client_admin.put(f"/api/v1/resources/{resource_1.id}", json=resource_data)
+    data = response.json()
+    assert response.status_code == 200
+    assert data["id"] == resource_1.id
+    assert data["name"] == resource_data["name"]
+    assert data["location"] == resource_data["location"]
+    assert data["capacity"] == resource_data["capacity"]
+    assert data["room_type"] == resource_data["room_type"]

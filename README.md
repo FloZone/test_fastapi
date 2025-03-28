@@ -35,6 +35,12 @@ Niveau 2:
 Copy the `.env.example` file to a `.env` file and set your database URL and your secret key for JWT token validation.
 
 ```
+pyenv install 3.13.0
+pyenv virtualenv 3.13.0 test_fastapi
+pyenv activate test_fastapi
+```
+
+```
 poetry config virtualenvs.in-project true
 poetry install
 poetry run alembic upgrade head
@@ -62,5 +68,8 @@ poetry run alembic upgrade head
 poetry run alembic history --verbose
 
 # Run tests
-poetry run pytest tests/* --verbose -s -x
+poetry run pytest tests/* --verbose -s -x --cov=app --cov-report xml:coverage.xml
+
+# Run SonarQube scanner
+sonar-scanner
 ```

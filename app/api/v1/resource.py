@@ -50,3 +50,15 @@ async def get_list(
 ) -> list[ResourceWithId]:
     """List all resources."""
     return await service.get_list(offset, limit, name, location)
+
+
+@router.put("/{id}", responses={404: {"description": "Not found"}})
+async def update(
+    id: int,
+    resource: ResourceBase,
+    current_user: AuthenticatedUser,
+    _: bool = Depends(AllowRole([Role.ADMIN])),
+    service: ResourceService = Depends(),
+) -> ResourceWithId:
+    """[Admin] Update a resource."""
+    return await service.update(id, resource)

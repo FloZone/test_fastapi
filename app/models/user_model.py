@@ -5,7 +5,6 @@ from sqlalchemy import Column, Enum, String
 from sqlmodel import Field, Relationship, SQLModel
 
 
-# TODO déplacer ailleurs ou remplacer par bool
 class Role(str, enum.Enum):
     USER = 10
     ADMIN = 20

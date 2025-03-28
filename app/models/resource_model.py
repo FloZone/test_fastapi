@@ -5,7 +5,6 @@ from sqlalchemy import CheckConstraint, Column, Enum
 from sqlmodel import Field, Relationship, SQLModel
 
 
-# TODO move enum
 class RoomType(enum.StrEnum):
     AUDITORIUM = auto()
     BOX = auto()

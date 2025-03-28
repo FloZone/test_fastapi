@@ -5,10 +5,11 @@ from sqlmodel import select
 from app.core.database import DBSession
 from app.core.exceptions import DuplicateException, NotFoundException, ValidationException
 from app.models.resource_model import ResourceInDb
+from app.repositories.repository import AbstractRepository
 from app.schema.resource_schema import ResourceBase, ResourceWithId
 
 
-class ResourceRepository:
+class ResourceRepository(AbstractRepository):
     def __init__(self, db: DBSession):
         self.db = db
 
@@ -41,7 +42,7 @@ class ResourceRepository:
             raise NotFoundException()
         return resource_db
 
-    async def get_list(self, offset: int, limit: int, name: str, location: str) -> list[ResourceWithId]:
+    async def get_list(self, offset: int, limit: int, name: str = None, location: str = None) -> list[ResourceWithId]:
         query = select(ResourceInDb)
         if name:
             query = query.where(ResourceInDb.name.icontains(name))

@@ -8,24 +8,24 @@ from app.repositories.booking_repository import BookingRepository
 from app.repositories.resource_repository import ResourceRepository
 from app.schema.booking_schema import BookingBase, BookingWithId, BookingWithOwner
 from app.schema.user_schema import UserWithId
+from app.services.service import AbstractService
 
 
-# TODO crééer une interface BaseService et BaseRepository
-class BookingService:
+class BookingService(AbstractService):
     def __init__(
         self, booking_repository: BookingRepository = Depends(), resource_repository: ResourceRepository = Depends()
     ):
         self.booking_repository = booking_repository
         self.resource_repository = resource_repository
 
-    async def create(self, booking: BookingBase, current_user: UserWithId) -> BookingWithId:
+    async def create(self, booking: BookingBase, current_user: UserWithId = None) -> BookingWithId:
         booking = BookingWithOwner(**booking.model_dump(), owner_id=current_user.id)
         # Check if resource is available
         if not await self.is_resource_available(booking.resource_id, booking.start, booking.end):
             raise NotAvailableException()
         return await self.booking_repository.create(booking)
 
-    async def delete(self, id: int, current_user: UserWithId):
+    async def delete(self, id: int, current_user: UserWithId = None):
         booking = await self.booking_repository.get(id)
         # If user is not admin and try to access a booking that is not his own
         if current_user.role.value < Role.ADMIN.value and booking.owner_id != current_user.id:
@@ -35,7 +35,7 @@ class BookingService:
             raise ValidationException()
         await self.booking_repository.delete(id)
 
-    async def get(self, id: int, current_user: UserWithId) -> BookingWithId:
+    async def get(self, id: int, current_user: UserWithId = None) -> BookingWithId:
         booking = await self.booking_repository.get(id)
         # If user is not admin and try to access a booking that is not his own
         if current_user.role.value < Role.ADMIN.value and booking.owner_id != current_user.id:
@@ -43,11 +43,11 @@ class BookingService:
         return booking
 
     async def get_list(
-        self, offset: int, limit: int, current_user: UserWithId, all: bool = False, search: str = None
+        self, offset: int, limit: int, current_user: UserWithId = None, all: bool = False, search: str = None
     ) -> list[BookingWithId]:
         return await self.booking_repository.get_list(offset, limit, current_user.id, all, search)
 
-    async def update(self, id: int, booking: BookingBase, current_user: UserWithId) -> BookingWithId:
+    async def update(self, id: int, booking: BookingBase, current_user: UserWithId = None) -> BookingWithId:
         booking_db = await self.booking_repository.get(id)
         # If user is not admin and try to access a booking that is not his own
         if current_user.role.value < Role.ADMIN.value and booking_db.owner_id != current_user.id:

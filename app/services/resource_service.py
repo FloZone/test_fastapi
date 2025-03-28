@@ -3,9 +3,10 @@ from fastapi import Depends
 from app.repositories.booking_repository import BookingRepository
 from app.repositories.resource_repository import ResourceRepository
 from app.schema.resource_schema import ResourceBase, ResourceWithId
+from app.services.service import AbstractService
 
 
-class ResourceService:
+class ResourceService(AbstractService):
     def __init__(
         self, resource_repository: ResourceRepository = Depends(), booking_repository: BookingRepository = Depends()
     ):

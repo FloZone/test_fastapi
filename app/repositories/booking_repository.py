@@ -7,10 +7,11 @@ from sqlmodel import and_, or_, select
 from app.core.database import DBSession
 from app.core.exceptions import DuplicateException, NotFoundException, ValidationException
 from app.models.booking_model import BookingInDb
+from app.repositories.repository import AbstractRepository
 from app.schema.booking_schema import BookingWithId, BookingWithOwner
 
 
-class BookingRepository:
+class BookingRepository(AbstractRepository):
     def __init__(self, db: DBSession):
         self.db = db
 
@@ -43,7 +44,9 @@ class BookingRepository:
             raise NotFoundException()
         return booking_db
 
-    async def get_list(self, offset: int, limit: int, owner_id: int, all: bool, search: str) -> list[BookingWithId]:
+    async def get_list(
+        self, offset: int, limit: int, owner_id: int = None, all: bool = False, search: str = None
+    ) -> list[BookingWithId]:
         query = select(BookingInDb)
         if not all:
             query = query.where(BookingInDb.owner_id == owner_id)

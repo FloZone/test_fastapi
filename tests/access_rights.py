@@ -25,6 +25,7 @@ class Access(Enum):
         ("post", "/api/v1/resources/", Access.ADMIN),
         ("get", "/api/v1/resources/", Access.USER),
         ("get", "/api/v1/resources/1", Access.USER),
+        ("put", "/api/v1/resources/1", Access.ADMIN),
         ("delete", "/api/v1/resources/1", Access.ADMIN),
         # Bookings endpoints
         ("post", "/api/v1/bookings/", Access.USER),
